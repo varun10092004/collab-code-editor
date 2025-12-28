@@ -1,8 +1,14 @@
 const axios = require("axios");
 
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
-
 async function getAISuggestion(code) {
+  const apiKey = process.env.MISTRAL_API_KEY;
+
+  // 🔐 Validate API key
+  if (!apiKey) {
+    console.error("MISTRAL_API_KEY is missing");
+    return "⚠️ AI key not configured. Please check server .env file.";
+  }
+
   try {
     const response = await axios.post(
       "https://api.mistral.ai/v1/chat/completions",
@@ -22,21 +28,29 @@ async function getAISuggestion(code) {
       },
       {
         headers: {
-          Authorization: `Bearer ${MISTRAL_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
+        timeout: 15000, // prevent hanging requests
       }
     );
 
-    return response.data.choices[0].message.content;
+    // 🛡️ Safe response handling
+    return (
+      response.data?.choices?.[0]?.message?.content ||
+      "⚠️ AI returned no response."
+    );
   } catch (error) {
-    console.error("MISTRAL API ERROR:", error.response?.data || error.message);
+    console.error(
+      "MISTRAL API ERROR:",
+      error.response?.data || error.message
+    );
 
     return `
 AI Suggestion (Fallback):
 
-• Improve code formatting
-• Add comments
+• Improve code readability
+• Add proper comments
 • Handle edge cases
 • Follow best practices
 `;
