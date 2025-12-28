@@ -1,5 +1,3 @@
-import "./Editor.css";
-
 import { useEffect, useState } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import axios from "axios";
@@ -31,34 +29,38 @@ export default function Editor() {
   };
 
   const getAIHelp = async () => {
-    const res = await axios.post("http://localhost:5000/ai-suggest", {
-      code,
-    });
-    setAIResponse(res.data.suggestion);
+    try {
+      const res = await axios.post("http://localhost:5000/ai-suggest", {
+        code,
+      });
+      setAIResponse(res.data.suggestion);
+    } catch (error) {
+      console.error("AI request failed:", error);
+      setAIResponse("⚠️ Unable to get AI response. Check backend.");
+    }
   };
 
   return (
-  <div className="editor-container">
-    <div className="code-section">
-      <MonacoEditor
-        height="100%"
-        language="javascript"
-        theme="vs-dark"
-        value={code}
-        onChange={handleChange}
-      />
-    </div>
+    <div className="editor-container">
+      <div className="code-section">
+        <MonacoEditor
+          height="100%"
+          language="javascript"
+          theme="vs-dark"
+          value={code}
+          onChange={handleChange}
+        />
+      </div>
 
-    <div className="ai-section">
-      <button className="ai-button" onClick={getAIHelp}>
-        Get AI Suggestion
-      </button>
+      <div className="ai-section">
+        <button className="ai-button" onClick={getAIHelp}>
+          Get AI Suggestion
+        </button>
 
-      <div className="ai-output">
-        {aiResponse || "AI suggestions will appear here..."}
+        <div className="ai-output">
+          {aiResponse || "AI suggestions will appear here..."}
+        </div>
       </div>
     </div>
-  </div>
-);
-
+  );
 }
